@@ -3,3 +3,7 @@ backports.zoneinfo==0.2.1;python_version<"3.9"
 Django==4.1
 psycopg2==2.9.3
 sqlparse==0.4.2
+flake8==5.0.4
+mccabe==0.7.0
+pycodestyle==2.9.1
+pyflakes==2.5.0

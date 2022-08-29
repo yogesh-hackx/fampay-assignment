@@ -3,12 +3,17 @@ version: "3.9"
 services:
   db:
     image: postgres
+    container_name: db
     volumes:
       - ./data/db:/var/lib/postgresql/data
+    # ports:
+    #   - "5432:5432"
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres@123
+    networks:
+      - djangonetwork
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
@@ -20,5 +25,49 @@ services:
       - POSTGRES_NAME=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres@123
+      - CELERY_BROKER=redis://redis:6379/0
+      - CELERY_BACKEND=redis://redis:6379/0
     depends_on:
       - db
+      - redis
+    links:
+      - db:db
+    networks:
+      - djangonetwork
+  celery:
+    build: .
+    command: celery -A scheduler worker -l INFO
+    volumes:
+      - .:/code
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres@123
+    depends_on:
+      - redis
+      - web
+    links:
+      - db:db
+    networks:
+      - djangonetwork
+  celery_beat:
+    build: .
+    command: celery -A scheduler beat -l INFO
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
+      - web
+      - celery
+    links:
+      - db:db
+    networks:
+      - djangonetwork
+  redis:
+    image: "redis:alpine"
+    links:
+        - db:db
+    networks:
+      - djangonetwork
+networks:
+  djangonetwork:

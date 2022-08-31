@@ -86,3 +86,6 @@ def fetchVideos(nextPageToken=None, publishedAfter=None):
             # recursively fetching the next-page's data, as youtube API max allows 50 records/page
             if hasNextPage:
                 fetchVideos(data["nextPageToken"], publishedAfter)
+
+            # terminating the function itself when data gets completely successfully fetched from one api-key
+            return
